@@ -20,17 +20,24 @@ jobs:
           COMMIT_MSG="${{ github.event.head_commit.message }}"
           CLEAN_MSG=$(echo "$COMMIT_MSG" | sed 's/"/\\"/g' | tr -d '\n')
           
-          # Hit the Jira REST API to create a new task
+          # Construct the JSON payload
+          PAYLOAD="{
+            \"fields\": {
+              \"project\": { \"key\": \"$PROJECT_KEY\" },
+              \"summary\": \"$CLEAN_MSG\",
+              \"description\": \"Automated task from GitHub commit: ${{ github.sha }}\",
+              \"issuetype\": { \"name\": \"Task\" },
+              \"parent\": { \"key\": \"$EPIC_KEY\" }
+            }
+          }"
+          
+          # Print the payload to GitHub logs for debugging
+          echo "DEBUG: Sending the following payload to Jira:"
+          echo "$PAYLOAD"
+          
+          # Hit the Jira REST API
           curl -X POST \
             -u "$JIRA_USER_EMAIL:$JIRA_API_TOKEN" \
             -H "Content-Type: application/json" \
-            --data "{
-              \"fields\": {
-                \"project\": { \"key\": \"$PROJECT_KEY\" },
-                \"summary\": \"$CLEAN_MSG\",
-                \"description\": \"Automated task from GitHub commit: ${{ github.sha }}\",
-                \"issuetype\": { \"name\": \"Task\" },
-                \"parent\": { \"key\": \"$EPIC_KEY\" }
-              }
-            }" \
+            --data "$PAYLOAD" \
             "$JIRA_BASE_URL/rest/api/2/issue"
