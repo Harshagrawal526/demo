@@ -4,7 +4,7 @@ Minimal API-only app for Vercel.
 
 ## Endpoint
 
-- `GET /api/roles?process_id=...&user_id=...`
+- `GET /api/agent?process_id=...&user_id=...`
   - `400` if query params are missing
   - `200` with `[
     "Sales Analyst"
